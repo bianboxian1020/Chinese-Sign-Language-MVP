@@ -1,0 +1,15 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.claude/
+.idea/
+.backup_v1/
+assets/models/xinyu_model_best.pth
+assets/models/model_config.json
+assets/models/hand_landmarker.task
+assets/models/hand_yolov8n.pt
+data/
+src/Programming Learn/
+*.mp3
+.DS_Store
