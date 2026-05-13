@@ -8,6 +8,7 @@ Handles microphone-based speech recognition (ASR) and text-to-speech (TTS) outpu
 import tempfile
 import os
 import threading
+from typing import Optional
 from PyQt6.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
 
 
@@ -25,7 +26,7 @@ class AudioRecorder(QThread):
     recording_state = pyqtSignal(bool) # True when actively listening
 
     def __init__(self, language: str = "zh-CN",
-                 parent: QObject | None = None) -> None:
+                 parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
         self.language = language
         self._running = False
@@ -107,12 +108,12 @@ class TTSPlayer(QObject):
     tts_error = pyqtSignal(str)
 
     def __init__(self, engine: str = "pyttsx3",
-                 parent: QObject | None = None) -> None:
+                 parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
         self._engine_type = engine
-        self._tencent_appid: str | None = None
-        self._tencent_secret_id: str | None = None
-        self._tencent_secret_key: str | None = None
+        self._tencent_appid: Optional[str] = None
+        self._tencent_secret_id: Optional[str] = None
+        self._tencent_secret_key: Optional[str] = None
         self._busy = False
 
     @pyqtSlot(str)

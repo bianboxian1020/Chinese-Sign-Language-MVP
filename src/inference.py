@@ -446,4 +446,11 @@ class SlidingWindowPredictor(QObject):
 
         if path.endswith(".json"):
             import json
-            with open(path, "r", encoding="utf
+            with open(path, "r", encoding="utf-8") as f:
+                raw = json.load(f)
+            return {int(k): v for k, v in raw.items()}
+
+        # 默认 TXT 格式
+        with open(path, "r", encoding="utf-8") as f:
+            lines = [ln.strip() for ln in f if ln.strip()]
+        return {i: word for i, word in enumerate(lines)}

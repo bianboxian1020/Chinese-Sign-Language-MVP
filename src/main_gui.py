@@ -10,6 +10,7 @@ import os
 import sys
 from functools import partial
 from datetime import datetime
+from typing import Optional
 
 import cv2
 import numpy as np
@@ -49,7 +50,7 @@ KEYWORD_VIDEO_MAP = {
 class SignVideoPlayer(QWidget):
     """手语演示视频播放器 (MVP: 占位符)."""
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -74,17 +75,17 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         # 模块实例
-        self._camera_worker: CameraWorker | None = None
-        self._vision_processor: VisionProcessor | None = None
-        self._predictor: SlidingWindowPredictor | None = None
-        self._audio_recorder: AudioRecorder | None = None
-        self._tts_player: TTSPlayer | None = None
-        self._yolo_detector: YOLOHandDetector | None = None
-        self._data_collector: DataCollector | None = None
+        self._camera_worker: Optional[CameraWorker] = None
+        self._vision_processor: Optional[VisionProcessor] = None
+        self._predictor: Optional[SlidingWindowPredictor] = None
+        self._audio_recorder: Optional[AudioRecorder] = None
+        self._tts_player: Optional[TTSPlayer] = None
+        self._yolo_detector: Optional[YOLOHandDetector] = None
+        self._data_collector: Optional[DataCollector] = None
 
         # 状态
         self._camera_active = False
-        self._last_sign: str | None = None
+        self._last_sign: Optional[str] = None
         self._history: list[tuple[str, float, float, str]] = []  # (label, conf, unc, time)
         self._show_overlay = False
 

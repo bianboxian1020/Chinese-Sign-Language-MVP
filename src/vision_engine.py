@@ -119,14 +119,14 @@ class CameraWorker(QThread):
 
     def __init__(self, camera_index: int = 0, fps_target: float = 30.0,
                  enable_blur: bool = True, blur_kernel: tuple = (5, 5),
-                 parent: QObject | None = None) -> None:
+                 parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
         self.camera_index = camera_index
         self.fps_target = fps_target
         self.enable_blur = enable_blur
         self.blur_kernel = blur_kernel
         self._running = False
-        self._cap: cv2.VideoCapture | None = None
+        self._cap: Optional[cv2.VideoCapture] = None
 
     def run(self) -> None:
         self._cap = cv2.VideoCapture(self.camera_index)
@@ -259,7 +259,7 @@ class KeyFrameExtractor:
 
     def __init__(self, threshold: float = 0.02) -> None:
         self.threshold = threshold
-        self._prev_features: np.ndarray | None = None
+        self._prev_features: Optional[np.ndarray] = None
 
     def is_key_frame(self, features: np.ndarray) -> bool:
         if self._prev_features is None:
@@ -300,11 +300,11 @@ class VisionProcessor(QObject):
                  enable_keyframe: bool = True,
                  keyframe_threshold: float = 0.02,
                  enable_overlay: bool = False,
-                 parent: QObject | None = None) -> None:
+                 parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
         self.enable_overlay = enable_overlay
         self._landmarker = None
-        self._hand_detector: YOLOHandDetector | None = None
+        self._hand_detector: Optional[YOLOHandDetector] = None
         self._keyframe_extractor = KeyFrameExtractor(threshold=keyframe_threshold)
         self._enable_keyframe = enable_keyframe
         self._data_queue = DataQueue(maxlen=90)
