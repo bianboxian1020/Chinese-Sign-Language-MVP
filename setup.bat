@@ -1,11 +1,9 @@
 @echo off
-REM 心语速译 (Xinyu Suyi) — 环境安装脚本
-REM Creates virtual environment and installs dependencies.
-
+chcp 65001 >nul
 cd /d "%~dp0"
 
 echo ===========================================
-echo  心语速译 — 环境安装
+echo  Xinyu Suyi - Setup
 echo ===========================================
 echo.
 
@@ -58,7 +56,7 @@ echo Downloading MediaPipe model...
 if not exist "assets\models\hand_landmarker.task" (
     powershell -Command "Invoke-WebRequest -Uri 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task' -OutFile 'assets\models\hand_landmarker.task'"
     if errorlevel 1 (
-        echo [WARNING] Model download failed. Please download manually.
+        echo [WARNING] Model download failed.
         echo URL: https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task
         echo Save to: assets\models\hand_landmarker.task
     )
@@ -69,6 +67,6 @@ if not exist "assets\models\hand_landmarker.task" (
 echo.
 echo ===========================================
 echo  Installation complete!
-echo  Run run.bat to start the application.
+echo  Run run.bat to start.
 echo ===========================================
 pause
