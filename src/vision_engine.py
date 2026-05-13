@@ -119,14 +119,14 @@ class CameraWorker(QThread):
 
     def __init__(self, camera_index: int = 0, fps_target: float = 30.0,
                  enable_blur: bool = True, blur_kernel: tuple = (5, 5),
-                 parent: QObject | None = None) -> None:
+                 parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
         self.camera_index = camera_index
         self.fps_target = fps_target
         self.enable_blur = enable_blur
         self.blur_kernel = blur_kernel
         self._running = False
-        self._cap: cv2.VideoCapture | None = None
+        self._cap: Optional[cv2.VideoCapture] = None
 
     def run(self) -> None:
         self._cap = cv2.VideoCapture(self.camera_index)
@@ -259,7 +259,7 @@ class KeyFrameExtractor:
 
     def __init__(self, threshold: float = 0.02) -> None:
         self.threshold = threshold
-        self._prev_features: np.ndarray | None = None
+        self._prev_features: Optional[np.ndarray] = None
 
     def is_key_frame(self, features: np.ndarray) -> bool:
         if self._prev_features is None:
@@ -300,11 +300,11 @@ class VisionProcessor(QObject):
                  enable_keyframe: bool = True,
                  keyframe_threshold: float = 0.02,
                  enable_overlay: bool = False,
-                 parent: QObject | None = None) -> None:
+                 parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
         self.enable_overlay = enable_overlay
         self._landmarker = None
-        self._hand_detector: YOLOHandDetector | None = None
+        self._hand_detector: Optional[YOLOHandDetector] = None
         self._keyframe_extractor = KeyFrameExtractor(threshold=keyframe_threshold)
         self._enable_keyframe = enable_keyframe
         self._data_queue = DataQueue(maxlen=90)
@@ -390,6 +390,8 @@ class VisionProcessor(QObject):
     def process_frame(self, frame: np.ndarray) -> None:
         """接收降噪帧并执行完整的预处理管线."""
         if self._landmarker is None:
+            if self.enable_overlay:
+                self.frame_with_overlay.emit(frame)
             return
 
         self._total_frames += 1
@@ -401,7 +403,6 @@ class VisionProcessor(QObject):
         if self._hand_detector is not None and self._hand_detector.is_available:
             hand_boxes = self._hand_detector.detect(frame)
             if hand_boxes:
-                # 取最大置信度的检测框
                 best = max(hand_boxes, key=lambda b: b[4])
                 process_frame = self._hand_detector.get_roi(frame, best)
 
@@ -411,10 +412,14 @@ class VisionProcessor(QObject):
             rgb = cv2.cvtColor(process_frame, cv2.COLOR_BGR2RGB)
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
             result = self._landmarker.detect_for_video(mp_image, self._frame_ts)
-            self._frame_ts += 33  # ~30fps
+            self._frame_ts += 33
             self._process_landmark_result(result)
         except Exception as e:
             self.vision_error.emit(f"MediaPipe 推理异常: {e}")
+            if self.enable_overlay:
+                cv2.putText(display_frame, "MP Error", (10, 30),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                self.frame_with_overlay.emit(display_frame)
             return
 
         # --- 特征提取与归一化 ---

@@ -25,7 +25,7 @@ class DataCollector(QObject):
     collector_error = pyqtSignal(str)
 
     def __init__(self, data_root: str = DATA_ROOT,
-                 parent: QObject | None = None) -> None:
+                 parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
         # 解析为项目根目录下的绝对路径，避免工作目录变化导致路径偏移
         if not os.path.isabs(data_root):

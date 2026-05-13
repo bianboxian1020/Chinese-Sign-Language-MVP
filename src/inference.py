@@ -289,16 +289,16 @@ class SlidingWindowPredictor(QObject):
     predictor_error = pyqtSignal(str)                 # 错误信息
     predictor_status = pyqtSignal(str)                # 状态更新
 
-    def __init__(self, config: ModelConfig | None = None,
+    def __init__(self, config: Optional[ModelConfig] = None,
                  label_map: dict[int, str] | None = None,
-                 parent: QObject | None = None) -> None:
+                 parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
         self.config = config or ModelConfig()
         self._label_map = label_map or {}  # {idx: "你好"}
         self._idx_map = {v: k for k, v in self._label_map.items()} if label_map else {}
 
         # 模型
-        self._model: SignLanguageModel | None = None
+        self._model: Optional[SignLanguageModel] = None
         self._model_loaded = False
 
         # 滑动窗口缓冲
@@ -307,7 +307,7 @@ class SlidingWindowPredictor(QObject):
         self._stride = self.config.stride
 
         # 防抖
-        self._last_label: str | None = None
+        self._last_label: Optional[str] = None
         self._stable_count: int = 0
         self._debounce_frames: int = self.config.debounce_frames
 
