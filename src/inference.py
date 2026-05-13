@@ -9,6 +9,8 @@ Architecture:
   Input (B, seq_len, 126) → Conv1d(空间特征) → Bi-LSTM(时序建模) →
   MultiHeadAttention(关键帧加权) → BayesianClassifier(输出+不确定性)
 """
+from __future__ import annotations
+
 import os
 from collections import deque
 from typing import Optional
@@ -17,46 +19,18 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 
+from model_config import ModelConfig
 
-# ==============================================================================
-# 模型配置
-# ==============================================================================
-
-class ModelConfig:
-    """CNN-BiLSTM-Attention 模型超参数."""
-
-    def __init__(self, **kwargs) -> None:
-        self.input_dim: int = kwargs.get("input_dim", 126)      # 2手 × 21点 × 3坐标
-        self.seq_len: int = kwargs.get("seq_len", 45)            # 默认 45 帧
-        self.num_classes: int = kwargs.get("num_classes", 1000)  # 词汇量
-        # CNN
-        self.conv_channels: list[int] = kwargs.get("conv_channels", [128, 256, 256])
-        self.conv_kernel: int = kwargs.get("conv_kernel", 3)
-        self.cnn_dropout: float = kwargs.get("cnn_dropout", 0.3)
-        # Bi-LSTM
-        self.lstm_hidden: int = kwargs.get("lstm_hidden", 256)
-        self.lstm_layers: int = kwargs.get("lstm_layers", 2)
-        self.lstm_dropout: float = kwargs.get("lstm_dropout", 0.3)
-        # Attention
-        self.attn_heads: int = kwargs.get("attn_heads", 8)
-        self.attn_dropout: float = kwargs.get("attn_dropout", 0.2)
-        # Bayesian Classifier
-        self.fc_hidden: int = kwargs.get("fc_hidden", 256)
-        self.fc_dropout: float = kwargs.get("fc_dropout", 0.5)
-        self.mc_samples: int = kwargs.get("mc_samples", 10)
-
-    @classmethod
-    def from_json(cls, path: str) -> "ModelConfig":
-        import json
-        with open(path, "r") as f:
-            return cls(**json.load(f))
-
-    def to_json(self, path: str) -> None:
-        import json
-        with open(path, "w") as f:
-            json.dump(self.__dict__, f, indent=2)
+try:
+    from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
+    _HAS_PYQT6 = True
+except ImportError:
+    _HAS_PYQT6 = False
+    QObject = object  # type: ignore
+    QThread = object  # type: ignore
+    pyqtSignal = lambda *a, **kw: None  # type: ignore
+    pyqtSlot = lambda *a, **kw: lambda f: f  # type: ignore
 
 
 # ==============================================================================
@@ -472,11 +446,4 @@ class SlidingWindowPredictor(QObject):
 
         if path.endswith(".json"):
             import json
-            with open(path, "r", encoding="utf-8") as f:
-                raw = json.load(f)
-            return {int(k): v for k, v in raw.items()}
-
-        # 默认 TXT 格式
-        with open(path, "r", encoding="utf-8") as f:
-            lines = [ln.strip() for ln in f if ln.strip()]
-        return {i: word for i, word in enumerate(lines)}
+            with open(path, "r", encoding="utf
